@@ -1,7 +1,11 @@
 <template>
   <div class="md:max-w-xl md:mx-auto mt-10 px-4 md:px-0">
     <div class="shadow-lg p-6 rounded">
-      <h1 class="mb-4 text-lg font-bold">Add Recipe</h1>
+      <h1 class="mb-4 text-lg font-bold">
+        <span v-if="$store.edit">Edit</span>
+        <span v-else>Add</span>
+        Recipe
+      </h1>
       <label class="block">
         <span class="text-gray-700">Name</span>
         <input
@@ -11,17 +15,20 @@
         />
       </label>
       <label class="block mt-4">
-        <span class="text-gray-700">Description</span>
-        <textarea
-          v-model="description"
-          class="border border-gray-300 px-3 py-2 w-full rounded mt-1"
-          rows="3"
-          placeholder="Enter some Description."
-        ></textarea>
+        <span class="text-gray-700">Image Url</span>
+        <input
+          v-model="imageUrl"
+          class="rounded border border-gray-300 px-3 py-2 w-full mt-1"
+          placeholder="image url"
+        />
       </label>
       <label class="block mt-4">
-        <span class="text-gray-700">Recipe</span>
-        <vue-editor class="mt-1" v-model="recipe"></vue-editor>
+        <span class="text-gray-700">Ingredients</span>
+        <vue-editor class="mt-1" v-model="ingredients"></vue-editor>
+      </label>
+      <label class="block mt-4">
+        <span class="text-gray-700">Directions</span>
+        <vue-editor class="mt-1" v-model="directions"></vue-editor>
       </label>
       <button
         @click="handleSubmit"
@@ -34,16 +41,6 @@
           text-gray-900
           bg-gray-200
           rounded
-          dark-mode:bg-gray-700
-          dark-mode:hover:bg-gray-600
-          dark-mode:focus:bg-gray-600
-          dark-mode:focus:text-white
-          dark-mode:hover:text-white
-          dark-mode:text-gray-200
-          hover:text-gray-900
-          focus:text-gray-900
-          hover:bg-gray-200
-          focus:bg-gray-200
           focus:outline-none
           focus:shadow-outline
         "
@@ -61,40 +58,45 @@ export default {
   components: {
     VueEditor,
   },
-
   data() {
     return {
-      data: [],
       name: "",
-      description: "",
-      recipe: "",
+      imageUrl: "",
+      ingredients: "",
+      directions: "",
     };
+  },
+  created() {
+    if (this.$store.recipe && this.$store.edit) {
+      this.id = this.$store.recipe.id;
+      this.name = this.$store.recipe.name;
+      this.imageUrl = this.$store.recipe.imageUrl;
+      this.ingredients = this.$store.recipe.ingredients;
+      this.directions = this.$store.recipe.directions;
+    }
   },
   methods: {
     handleSubmit() {
-      if (localStorage.hasOwnProperty("data")) {
-        let data = JSON.parse(localStorage.getItem("data"));
-        data.push({
-          id: data.length + 1,
+      if (this.$store.edit) {
+        let index = this.$store.recipes.indexOf(this.$store.recipe);
+        this.$actions.editRecipe(index, {
+          id: this.$store.recipe.id,
           name: this.name,
-          description: this.description,
-          recipe: this.recipe,
+          imageUrl: this.imageUrl,
+          ingredients: this.ingredients,
+          directions: this.directions,
         });
-        localStorage.setItem("data", JSON.stringify(data));
-        alert("Added Successfully");
       } else {
-        this.data.push({
-          id: this.data.length + 1,
+        this.$actions.addRecipe({
+          id: this.$store.recipes.length + 1,
           name: this.name,
-          description: this.description,
-          recipe: this.recipe,
+          imageUrl: this.imageUrl,
+          ingredients: this.ingredients,
+          directions: this.directions,
         });
-        localStorage.setItem("data", JSON.stringify(this.data));
-        alert("Added Successfully");
       }
+      this.$actions.setPage("");
     },
   },
 };
 </script>
-
-<style></style>
